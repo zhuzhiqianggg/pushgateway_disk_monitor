@@ -1,0 +1,17 @@
+[Unit]
+Description=Disk Health Monitor - PushGateway Exporter
+Documentation=https://prometheus.io/docs/practices/pushing/
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+ExecStart=/root/.openclaw/disk_monitor/disk_health_monitor.sh --pushgateway
+Restart=on-failure
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=disk-health-monitor
+
+[Install]
+WantedBy=multi-user.target

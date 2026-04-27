@@ -1,0 +1,8 @@
+scrape_configs:
+  - job_name: 'disk-health'
+    honor_labels: true
+    static_configs:
+      - targets: ['121.36.241.152:9091']
+        labels:
+          service: 'disk-health'
+          module: 'smartmontools'

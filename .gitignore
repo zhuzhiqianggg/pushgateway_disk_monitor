@@ -1,0 +1,4 @@
+.remote_setup.sh
+*.bak
+*~
+.DS_Store

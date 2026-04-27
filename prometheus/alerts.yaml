@@ -1,0 +1,155 @@
+groups:
+  - name: smart-monitor-alerts
+    interval: 30s
+    rules:
+      - alert: SmartHealthFailed
+        expr: smart_health_status == 0 and smart_smart_available == 1
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "磁盘健康状态失败"
+          description: "服务器 {{ $labels.hostname }} 上的磁盘 {{ $labels.device }} (型号: {{ $labels.model }}) 健康状态失败"
+          runbook_url: "https://wiki.example.com/runbook/disk-health-failed"
+
+      - alert: SmartHealthUnknown
+        expr: smart_health_status == 2 and smart_smart_available == 1
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "磁盘健康状态未知"
+          description: "服务器 {{ $labels.hostname }} 上的磁盘 {{ $labels.device }} 无法获取健康状态"
+
+      - alert: SmartUnsupported
+        expr: smart_smart_available == 0
+        for: 30m
+        labels:
+          severity: info
+        annotations:
+          summary: "磁盘不支持SMART"
+          description: "服务器 {{ $labels.hostname }} 上的磁盘 {{ $labels.device }} (型号: {{ $labels.model }}) 不支持S.M.A.R.T，无法获取硬件健康指标，可能为虚拟化磁盘"
+
+      - alert: SmartTemperatureHigh
+        expr: smart_temperature_celsius > 50 and smart_smart_available == 1
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "磁盘温度过高"
+          description: "服务器 {{ $labels.hostname }} 上的磁盘 {{ $labels.device }} 温度超过50°C，当前温度: {{ $value }}°C"
+
+      - alert: SmartTemperatureCritical
+        expr: smart_temperature_celsius > 60 and smart_smart_available == 1
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "磁盘温度严重过高"
+          description: "服务器 {{ $labels.hostname }} 上的磁盘 {{ $labels.device }} 温度超过60°C，当前温度: {{ $value }}°C"
+
+      - alert: SmartReallocatedSectorsHigh
+        expr: smart_reallocated_sectors > 100 and smart_smart_available == 1
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "磁盘重映射扇区过多"
+          description: "服务器 {{ $labels.hostname }} 上的磁盘 {{ $labels.device }} 重映射扇区数量过高: {{ $value }}"
+
+      - alert: SmartReallocatedSectorsCritical
+        expr: smart_reallocated_sectors > 1000 and smart_smart_available == 1
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "磁盘重映射扇区严重过多"
+          description: "服务器 {{ $labels.hostname }} 上的磁盘 {{ $labels.device }} 重映射扇区数量严重过多: {{ $value }}，建议立即备份数据"
+
+      - alert: SSDPercentageUsedHigh
+        expr: smart_percentage_used > 80 and smart_smart_available == 1
+        for: 1h
+        labels:
+          severity: warning
+        annotations:
+          summary: "SSD已使用寿命过高"
+          description: "服务器 {{ $labels.hostname }} 上的SSD {{ $labels.device }} 已使用寿命达到 {{ $value }}%，请计划更换"
+
+      - alert: SSDPercentageUsedCritical
+        expr: smart_percentage_used > 95 and smart_smart_available == 1
+        for: 30m
+        labels:
+          severity: critical
+        annotations:
+          summary: "SSD已使用寿命即将耗尽"
+          description: "服务器 {{ $labels.hostname }} 上的SSD {{ $labels.device }} 已使用寿命达到 {{ $value }}%，请立即备份并更换"
+
+      - alert: SSDAvailableSpareLow
+        expr: smart_available_spare < 10 and smart_available_spare >= 0 and smart_smart_available == 1
+        for: 1h
+        labels:
+          severity: warning
+        annotations:
+          summary: "SSD可用备用块不足"
+          description: "服务器 {{ $labels.hostname }} 上的SSD {{ $labels.device }} 可用备用块低于10%，当前: {{ $value }}%"
+
+      - alert: SmartPowerOnHoursHigh
+        expr: smart_power_on_hours > 87600 and smart_smart_available == 1
+        for: 1h
+        labels:
+          severity: info
+        annotations:
+          summary: "磁盘通电时间过长"
+          description: "服务器 {{ $labels.hostname }} 上的磁盘 {{ $labels.device }} 通电时间超过10年 (87600小时)，当前: {{ $value }}小时"
+
+  - name: smart-filesystem-alerts
+    interval: 30s
+    rules:
+      - alert: SmartFilesystemUsageHigh
+        expr: smart_filesystem_use_percent > 80
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "文件系统使用率过高"
+          description: "服务器 {{ $labels.hostname }} 上的文件系统 {{ $labels.mountpoint }} 使用率超过80%，当前: {{ $value }}%"
+
+      - alert: SmartFilesystemUsageCritical
+        expr: smart_filesystem_use_percent > 90
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "文件系统使用率严重过高"
+          description: "服务器 {{ $labels.hostname }} 上的文件系统 {{ $labels.mountpoint }} 使用率超过90%，当前: {{ $value }}%，请立即清理空间"
+
+      - alert: SmartFilesystemAvailableLow
+        expr: smart_filesystem_avail_bytes < 1024 * 1024 * 1024  # 1GB
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "文件系统可用空间不足"
+          description: "服务器 {{ $labels.hostname }} 上的文件系统 {{ $labels.mountpoint }} 可用空间不足1GB"
+
+  - name: smart-monitor-sla
+    interval: 5m
+    rules:
+      - record: smart:health_failure_rate:5m
+        expr: |
+          sum(smart_health_status{smart_smart_available="1", smart_health_status="0"}) by (hostname)
+          /
+          sum(smart_health_status{smart_smart_available="1"}) by (hostname)
+
+      - record: smart:temperature_avg:5m
+        expr: |
+          avg(smart_temperature_celsius{smart_smart_available="1"}) by (hostname, device)
+
+      - alert: SmartHealthSLADegraded
+        expr: smart:health_failure_rate:5m > 0.1
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "磁盘健康SLA下降"
+          description: "服务器 {{ $labels.hostname }} 过去5分钟磁盘故障率超过10%"
