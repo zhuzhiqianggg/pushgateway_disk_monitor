@@ -92,21 +92,30 @@ init_auth() {
     echo "  SSH 认证配置"
     echo "============================================"
 
+    # 如果 config.sh 中未配置 SSH_USER，交互式输入
     if [[ -z "${SSH_USER:-}" ]]; then
         read -p "请输入远程服务器登录用户 [root]: " SSH_USER
         SSH_USER="${SSH_USER:-root}"
     fi
 
+    # 如果 config.sh 中已配置了 SSH_PASS（非空），直接使用密码认证
+    if [[ -n "${SSH_PASS:-}" ]]; then
+        AUTH_MODE="password"
+        echo -e "\033[0;34m[INFO]\033[0m 使用配置的密码认证"
+        return
+    fi
+
+    # SSH_PASS 为空，尝试密钥认证
     if has_ssh_key; then
         AUTH_MODE="key"
         echo -e "\033[0;34m[INFO]\033[0m 检测到 SSH 密钥，使用密钥认证"
         return
     fi
 
-    if [[ -z "${SSH_PASS:-}" ]]; then
-        read -s -p "请输入远程服务器密码: " SSH_PASS
-        echo ""
-    fi
+    # 无密钥且无密码，必须交互式输入
+    echo -e "\033[1;33m[WARN]\033[0m 未配置 SSH 密码且无 SSH 密钥"
+    read -s -p "请输入远程服务器密码: " SSH_PASS
+    echo ""
     [[ -z "$SSH_PASS" ]] && { echo -e "\033[0;31m[ERROR]\033[0m 密码不能为空"; exit 1; }
 
     command -v sshpass &>/dev/null || { echo -e "\033[0;31m[ERROR]\033[0m 请安装 sshpass: apt-get install -y sshpass"; exit 1; }
@@ -205,7 +214,7 @@ deploy_to_server() {
 
     echo -e "\033[0;34m[INFO]\033[0m 安装服务 ..."
     local setup_out
-    setup_out=$(timeout ${SERVER_DEPLOY_TIMEOUT} remote_exec "$server" "bash /tmp/disk_monitor_setup.sh ${REMOTE_INSTALL_DIR} ${PUSHGATEWAY_URL} ${PUSH_INTERVAL}" 2>&1) || true
+    setup_out=$(remote_exec "$server" "bash /tmp/disk_monitor_setup.sh ${REMOTE_INSTALL_DIR} ${PUSHGATEWAY_URL} ${PUSH_INTERVAL}" 2>&1) || true
 
     remote_exec "$server" "rm -f /tmp/disk_monitor_setup.sh" 2>/dev/null || true
 
