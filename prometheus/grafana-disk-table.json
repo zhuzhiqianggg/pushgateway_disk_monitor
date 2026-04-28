@@ -65,6 +65,13 @@
             ]
           },
           {
+            "matcher": { "id": "byName", "options": "容量" },
+            "properties": [
+              { "id": "unit", "value": "bytes" },
+              { "id": "custom.width", "value": 100 }
+            ]
+          },
+          {
             "matcher": { "id": "byName", "options": "寿命消耗(%)" },
             "properties": [
               { "id": "unit", "value": "percent" },
@@ -166,7 +173,7 @@
         },
         {
           "datasource": { "type": "prometheus", "uid": "${datasource}" },
-          "expr": "smart_percentage_used",
+          "expr": "smart_capacity_bytes",
           "format": "table",
           "instant": true,
           "legendFormat": "__auto",
@@ -175,7 +182,7 @@
         },
         {
           "datasource": { "type": "prometheus", "uid": "${datasource}" },
-          "expr": "smart_power_on_hours",
+          "expr": "smart_percentage_used",
           "format": "table",
           "instant": true,
           "legendFormat": "__auto",
@@ -184,7 +191,7 @@
         },
         {
           "datasource": { "type": "prometheus", "uid": "${datasource}" },
-          "expr": "smart_reallocated_sectors",
+          "expr": "smart_power_on_hours",
           "format": "table",
           "instant": true,
           "legendFormat": "__auto",
@@ -193,7 +200,7 @@
         },
         {
           "datasource": { "type": "prometheus", "uid": "${datasource}" },
-          "expr": "smart_smart_available",
+          "expr": "smart_reallocated_sectors",
           "format": "table",
           "instant": true,
           "legendFormat": "__auto",
@@ -202,7 +209,7 @@
         },
         {
           "datasource": { "type": "prometheus", "uid": "${datasource}" },
-          "expr": "smart_remaining_life_hours > 0",
+          "expr": "smart_smart_available",
           "format": "table",
           "instant": true,
           "legendFormat": "__auto",
@@ -243,11 +250,11 @@
             "renameByName": {
               "Value #A": "健康状态",
               "Value #B": "温度(°C)",
-              "Value #C": "寿命消耗(%)",
-              "Value #D": "通电时间(小时)",
-              "Value #E": "重映射扇区",
-              "Value #F": "SMART",
-              "Value #G": "剩余寿命(小时)",
+              "Value #C": "容量",
+              "Value #D": "寿命消耗(%)",
+              "Value #E": "通电时间(小时)",
+              "Value #F": "重映射扇区",
+              "Value #G": "SMART",
               "device": "设备",
               "hostname": "服务器",
               "model": "型号",

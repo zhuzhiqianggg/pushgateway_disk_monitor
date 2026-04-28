@@ -642,6 +642,21 @@ generate_prometheus_metric_values() {
         local disk_max_life_hours=0
     fi
 
+    # 获取磁盘容量 (bytes)
+    local capacity_bytes=0
+    local cap_line=$(smartctl -i "$device" 2>/dev/null | grep "User Capacity:")
+    if [[ -n "$cap_line" ]]; then
+        # 格式: "User Capacity:    4,801,039,802,368 bytes [4.80 TB]"
+        capacity_bytes=$(echo "$cap_line" | grep -oP '[\d,]+(?= bytes)' | tr -d ',')
+    fi
+    if [[ -z "$capacity_bytes" || "$capacity_bytes" == "0" ]]; then
+        # 回退: 从 sysfs 获取扇区数计算
+        local sectors=$(cat /sys/block/$(basename "$device")/size 2>/dev/null)
+        if [[ -n "$sectors" ]]; then
+            capacity_bytes=$((sectors * 512))
+        fi
+    fi
+
     echo "smart_health_status{$smart_labels} $health_status"
     echo "smart_temperature_celsius{$smart_labels} $temperature"
     echo "smart_power_on_hours{$smart_labels} $power_on_hours"
@@ -653,6 +668,7 @@ generate_prometheus_metric_values() {
     echo "smart_total_lbas_written{$smart_labels} $total_lbas_written"
     echo "smart_remaining_life_hours{$smart_labels} $remaining_life_hours"
     echo "smart_disk_max_life_hours{$smart_labels} $disk_max_life_hours"
+    echo "smart_capacity_bytes{$smart_labels} $capacity_bytes"
 }
 
 # 控制台彩色输出
