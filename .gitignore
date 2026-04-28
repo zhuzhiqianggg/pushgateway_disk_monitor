@@ -1,4 +1,4 @@
-.remote_setup.sh
-*.bak
-*~
-.DS_Store
+config.sh
+*.swp
+*.tmp
+.trash/
