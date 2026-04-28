@@ -6,7 +6,7 @@ Wants=network-online.target
 
 [Service]
 Type=simple
-ExecStart=/root/.openclaw/disk_monitor/disk_health_monitor.sh --pushgateway
+ExecStart=/opt/monitor/disk_monitor/scripts/disk_health_monitor.sh --pushgateway
 Restart=on-failure
 RestartSec=10
 StandardOutput=journal
