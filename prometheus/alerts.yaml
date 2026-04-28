@@ -102,6 +102,33 @@ groups:
           summary: "磁盘通电时间过长"
           description: "服务器 {{ $labels.hostname }} 上的磁盘 {{ $labels.device }} 通电时间超过10年 (87600小时)，当前: {{ $value }}小时"
 
+      - alert: SmartRemainingLifeLow
+        expr: smart_remaining_life_hours > 0 and smart_remaining_life_hours < 8760 and smart_smart_available == 1
+        for: 1h
+        labels:
+          severity: warning
+        annotations:
+          summary: "磁盘预计剩余寿命不足1年"
+          description: "服务器 {{ $labels.hostname }} 上的磁盘 {{ $labels.device }} 预计剩余寿命不足1年，当前: {{ $value }}小时，请计划更换"
+
+      - alert: SmartRemainingLifeCritical
+        expr: smart_remaining_life_hours > 0 and smart_remaining_life_hours < 2160 and smart_smart_available == 1
+        for: 30m
+        labels:
+          severity: critical
+        annotations:
+          summary: "磁盘预计剩余寿命不足3个月"
+          description: "服务器 {{ $labels.hostname }} 上的磁盘 {{ $labels.device }} 预计剩余寿命不足3个月，当前: {{ $value }}小时，请立即备份并更换"
+
+      - alert: SmartDataWrittenHigh
+        expr: smart_data_written_blocks > 0 and smart_data_written_blocks > 2e12 and smart_smart_available == 1
+        for: 1h
+        labels:
+          severity: info
+        annotations:
+          summary: "NVMe磁盘数据写入量过高"
+          description: "服务器 {{ $labels.hostname }} 上的NVMe磁盘 {{ $labels.device }} 累计写入超过1000TB，当前: {{ $value }} blocks"
+
   - name: smart-filesystem-alerts
     interval: 30s
     rules:

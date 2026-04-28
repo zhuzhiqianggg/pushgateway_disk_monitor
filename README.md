@@ -63,15 +63,24 @@ systemctl start disk-health-monitor
 
 ## 监控指标
 
-| 指标名 | 说明 | 单位 |
-|--------|------|------|
-| `smart_health_status` | 健康状态 (1=正常, 0=失败) | - |
-| `smart_temperature_celsius` | 磁盘温度 | °C |
-| `smart_power_on_hours` | 通电时间 | 小时 |
-| `smart_percentage_used` | SSD 已消耗寿命百分比 | % |
-| `smart_available_spare` | NVMe SSD 可用备用块 | % |
-| `smart_reallocated_sectors` | 重映射扇区数量 | - |
-| `smart_smart_available` | SMART 是否支持 (1=支持) | - |
+| 指标名 | 说明 | 单位 | 备注 |
+|--------|------|------|------|
+| `smart_health_status` | 健康状态 (1=正常, 0=失败, 2=未知) | - | - |
+| `smart_temperature_celsius` | 磁盘温度 | °C | -1表示不可获取 |
+| `smart_power_on_hours` | 通电时间 | 小时 | -1表示不可获取 |
+| `smart_percentage_used` | **SSD已消耗寿命百分比** | % | 核心寿命指标，0-100 |
+| `smart_available_spare` | NVMe SSD 可用备用块 | % | -1表示非NVMe |
+| `smart_available_spare_threshold` | NVMe SSD 备用块阈值 | % | -1表示非NVMe |
+| `smart_data_written_blocks` | NVMe累计数据写入量 | 512B blocks | -1表示非NVMe |
+| `smart_total_lbas_written` | SATA SSD累计LBA写入量 | 512B blocks | 0表示不可获取 |
+| `smart_remaining_life_hours` | **预计剩余寿命** | 小时 | 基于使用率推算 |
+| `smart_disk_max_life_hours` | **推算设计总寿命** | 小时 | 基于使用率推算 |
+| `smart_reallocated_sectors` | 重映射扇区/坏块数量 | - | 0表示正常 |
+| `smart_smart_available` | SMART 是否支持 (1=支持) | - | - |
+| `smart_filesystem_size_bytes` | 文件系统总大小 | bytes | - |
+| `smart_filesystem_used_bytes` | 文件系统已使用大小 | bytes | - |
+| `smart_filesystem_avail_bytes` | 文件系统可用大小 | bytes | - |
+| `smart_filesystem_use_percent` | 文件系统使用百分比 | % | - |
 
 ## 标签说明
 
@@ -104,6 +113,9 @@ scrape_configs:
 - `smart_percentage_used > 95%` → 严重
 - `smart_temperature_celsius > 50°C` → 警告
 - `smart_temperature_celsius > 60°C` → 严重
+- `smart_remaining_life_hours < 8760` → 警告（不足1年）
+- `smart_remaining_life_hours < 2160` → 严重（不足3个月）
+- `smart_data_written_blocks > 2e12` → 提示（NVMe写入超1000TB）
 
 ## Grafana 仪表盘
 

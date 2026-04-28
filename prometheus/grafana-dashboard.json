@@ -65,17 +65,17 @@
       "pluginVersion": "10.0.0",
       "targets": [
         {
-          "expr": "count(disk_health_status{health_status=\"1\"})",
+          "expr": "count(smart_health_status == 1)",
           "legendFormat": "正常",
           "refId": "A"
         },
         {
-          "expr": "count(disk_health_status{health_status=\"0\"})",
+          "expr": "count(smart_health_status == 0)",
           "legendFormat": "失败",
           "refId": "B"
         },
         {
-          "expr": "count(disk_health_status{health_status=\"2\"})",
+          "expr": "count(smart_health_status == 2)",
           "legendFormat": "未知",
           "refId": "C"
         }
@@ -132,7 +132,7 @@
       },
       "targets": [
         {
-          "expr": "disk_temperature_celsius{instance=~\"$instance\"}",
+          "expr": "smart_temperature_celsius",
           "legendFormat": "{{hostname}}/{{device}}",
           "refId": "A"
         }
@@ -179,7 +179,7 @@
       },
       "targets": [
         {
-          "expr": "max(disk_temperature_celsius{instance=~\"$instance\"})",
+          "expr": "max(smart_temperature_celsius)",
           "legendFormat": "最高温度",
           "refId": "A"
         }
@@ -258,7 +258,7 @@
       "pluginVersion": "10.0.0",
       "targets": [
         {
-          "expr": "disk_health_status{instance=~\"$instance\"}",
+          "expr": "smart_health_status",
           "format": "table",
           "instant": true,
           "legendFormat": "",
@@ -336,7 +336,7 @@
       },
       "targets": [
         {
-          "expr": "disk_reallocated_sectors{instance=~\"$instance\"}",
+          "expr": "smart_reallocated_sectors",
           "legendFormat": "{{hostname}}/{{device}}",
           "refId": "A"
         }
@@ -426,14 +426,14 @@
         "allValue": ".*",
         "current": { "selected": true, "text": "All", "value": "$__all" },
         "datasource": { "type": "prometheus", "uid": "${datasource}" },
-        "definition": "label_values(disk_health_status, instance)",
+        "definition": "label_values(smart_health_status, instance)",
         "hide": 0,
         "includeAll": true,
         "label": "实例",
         "multi": true,
         "name": "instance",
         "options": [],
-        "query": { "query": "label_values(disk_health_status, instance)", "refId": "StandardVariableQuery" },
+        "query": { "query": "label_values(smart_health_status, instance)", "refId": "StandardVariableQuery" },
         "refresh": 2,
         "regex": "",
         "skipUrlSync": false,

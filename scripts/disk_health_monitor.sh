@@ -325,9 +325,10 @@ get_reallocated_sectors() {
     local sectors=0
 
     if [[ $device == /dev/nvme* ]]; then
-        local line=$(smartctl -A "$device" 2>/dev/null | grep -E '^Unsafe Shutdowns:')
+        # NVMe: Media and Data Integrity Errors 是磁盘坏块/数据错误的真实指标
+        local line=$(smartctl -A "$device" 2>/dev/null | grep -E '^Media and Data Integrity Errors:')
         if [[ -n "$line" ]]; then
-            sectors=$(echo "$line" | sed 's/.*Unsafe Shutdowns: *//' | awk '{print $1}' | tr -d ',')
+            sectors=$(echo "$line" | sed 's/.*Media and Data Integrity Errors: *//' | awk '{print $1}' | tr -d ',')
         fi
     else
         sectors=$(smartctl -A "$device" 2>/dev/null | grep "Reallocated_Sector_Ct" | awk '{print $10}')
@@ -357,14 +358,25 @@ get_ssd_life_info() {
             "available_spare_threshold")
                 value=$(smartctl -A "$device" 2>/dev/null | grep 'Available Spare Threshold:' | sed 's/.*Available Spare Threshold: *//' | awk '{print $1}' | tr -d '%,' )
                 ;;
+            "data_units_written")
+                # NVMe: Data Units Written 单位为 512-byte 块
+                local raw=$(smartctl -A "$device" 2>/dev/null | grep 'Data Units Written:' | sed 's/.*Data Units Written: *//')
+                # 格式如 "174,848,687 [89.5 TB]"，提取第一个数字
+                value=$(echo "$raw" | awk '{print $1}' | tr -d ',')
+                ;;
             *)
                 value=0
                 ;;
         esac
     else
+        # SATA SSD: available_spare 和 available_spare_threshold 是 NVMe 专属指标
         local smart_output=$(smartctl -A "$device" 2>/dev/null)
 
         case $info_type in
+            "available_spare"|"available_spare_threshold")
+                echo -1
+                return
+                ;;
             "wear_leveling_count")
                 local wl_raw=$(echo "$smart_output" | grep -i "Wear_Leveling_Count" | awk '{print $10}')
                 local wl_value=$(echo "$smart_output" | grep -i "Wear_Leveling_Count" | awk '{print $4}' | sed 's/^0*//')
@@ -390,6 +402,13 @@ get_ssd_life_info() {
                 fi
                 value=$pl_used
                 ;;
+            "total_lbas_written")
+                # SATA SSD: Total_LBAs_Written (512-byte blocks)
+                value=$(echo "$smart_output" | grep -i "Total_LBAs_Written" | awk '{print $10}')
+                if [[ -z "$value" || ! "$value" =~ ^[0-9]+$ ]]; then
+                    value=0
+                fi
+                ;;
             *)
                 value=0
                 ;;
@@ -401,6 +420,89 @@ get_ssd_life_info() {
     fi
 
     echo $value
+}
+
+# 获取NVMe总数据写入量(512-byte blocks)
+get_nvme_data_units_written() {
+    local device=$1
+    local value=0
+
+    if [[ $device == /dev/nvme* ]]; then
+        local raw=$(smartctl -A "$device" 2>/dev/null | grep 'Data Units Written:' | sed 's/.*Data Units Written: *//')
+        value=$(echo "$raw" | awk '{print $1}' | tr -d ',')
+    fi
+
+    if [[ -z "$value" || ! "$value" =~ ^[0-9]+$ ]]; then
+        echo 0
+    else
+        echo $value
+    fi
+}
+
+# 获取SATA SSD总LBA写入量(512-byte blocks)
+get_sata_total_lbas_written() {
+    local device=$1
+    local value=0
+
+    if [[ $device != /dev/nvme* ]]; then
+        local smart_output=$(smartctl -A "$device" 2>/dev/null)
+        value=$(echo "$smart_output" | grep -i "Total_LBAs_Written" | awk '{print $10}')
+    fi
+
+    if [[ -z "$value" || ! "$value" =~ ^[0-9]+$ ]]; then
+        echo 0
+    else
+        echo $value
+    fi
+}
+
+# 获取NVMe预计剩余寿命(小时)
+get_nvme_remaining_life_hours() {
+    local device=$1
+    local power_on_hours=$2
+    local percentage_used=$3
+
+    if [[ $power_on_hours -gt 0 && $percentage_used -gt 0 ]]; then
+        # 每小时消耗百分比 = percentage_used / power_on_hours
+        # 剩余寿命 = (100 - percentage_used) / 每小时消耗百分比
+        # 简化计算: remaining = (100 - used) * hours / used
+        local remaining=$(( (100 - percentage_used) * power_on_hours / percentage_used ))
+        echo $remaining
+    else
+        echo 0
+    fi
+}
+
+# 获取SATA SSD预计剩余寿命(小时)
+get_sata_remaining_life_hours() {
+    local device=$1
+    local power_on_hours=$2
+    local percentage_used=$3
+
+    if [[ $power_on_hours -gt 0 && $percentage_used -gt 0 ]]; then
+        local remaining=$(( (100 - percentage_used) * power_on_hours / percentage_used ))
+        echo $remaining
+    else
+        echo 0
+    fi
+}
+
+# 获取磁盘设计总寿命(小时)
+get_disk_max_life_hours() {
+    local device=$1
+    local disk_type=$2
+    local percentage_used=$3
+    local power_on_hours=$4
+
+    # 基于当前使用情况推算设计总寿命
+    # 设计总寿命 = 已用时间 / 已用百分比
+    if [[ $percentage_used -gt 0 && $power_on_hours -gt 0 ]]; then
+        local max_life=$(( power_on_hours * 100 / percentage_used ))
+        echo $max_life
+    else
+        # 无法计算时返回0
+        echo 0
+    fi
 }
 
 get_disk_mount_points() {
@@ -436,14 +538,22 @@ generate_prometheus_headers() {
 # TYPE smart_temperature_celsius gauge
 # HELP smart_power_on_hours 磁盘通电时间(小时, -1表示不可获取)
 # TYPE smart_power_on_hours gauge
-# HELP smart_reallocated_sectors 重映射扇区数量(-1表示不可获取)
+# HELP smart_reallocated_sectors 重映射扇区数量(坏块数, 0表示正常)
 # TYPE smart_reallocated_sectors gauge
-# HELP smart_percentage_used SSD已使用百分比(-1表示不可获取)
+# HELP smart_percentage_used SSD已使用寿命百分比(0-100, -1表示不可获取)
 # TYPE smart_percentage_used gauge
-# HELP smart_available_spare SSD可用备用块百分比(-1表示不可获取)
+# HELP smart_available_spare NVMe可用备用块百分比(0-100, -1表示非NVMe)
 # TYPE smart_available_spare gauge
-# HELP smart_available_spare_threshold SSD备用块阈值百分比(-1表示不可获取)
+# HELP smart_available_spare_threshold NVMe备用块阈值百分比(-1表示非NVMe)
 # TYPE smart_available_spare_threshold gauge
+# HELP smart_data_written_blocks NVMe总数据写入量(512-byte blocks, -1表示非NVMe)
+# TYPE smart_data_written_blocks gauge
+# HELP smart_total_lbas_written SATA SSD总LBA写入量(512-byte blocks, 0表示非SATA SSD或不可获取)
+# TYPE smart_total_lbas_written gauge
+# HELP smart_remaining_life_hours 预计剩余寿命(小时, 0表示无法计算)
+# TYPE smart_remaining_life_hours gauge
+# HELP smart_disk_max_life_hours 推算设计总寿命(小时, 0表示无法计算)
+# TYPE smart_disk_max_life_hours gauge
 EOF
 }
 
@@ -475,6 +585,14 @@ generate_prometheus_metric_values() {
         local percentage_used=$(get_ssd_life_info "$device" "percentage_used")
         local available_spare=$(get_ssd_life_info "$device" "available_spare")
         local available_spare_threshold=$(get_ssd_life_info "$device" "available_spare_threshold")
+        local data_written_blocks=$(get_ssd_life_info "$device" "data_units_written")
+        local total_lbas_written=$(get_ssd_life_info "$device" "total_lbas_written")
+        local remaining_life_hours=0
+        local disk_max_life_hours=0
+        if [[ $power_on_hours -gt 0 && $percentage_used -gt 0 ]]; then
+            remaining_life_hours=$(( (100 - percentage_used) * power_on_hours / percentage_used ))
+            disk_max_life_hours=$(( power_on_hours * 100 / percentage_used ))
+        fi
     else
         local health_status=1
         local temperature=-1
@@ -483,6 +601,10 @@ generate_prometheus_metric_values() {
         local percentage_used=-1
         local available_spare=-1
         local available_spare_threshold=-1
+        local data_written_blocks=-1
+        local total_lbas_written=0
+        local remaining_life_hours=0
+        local disk_max_life_hours=0
     fi
 
     echo "smart_health_status{$smart_labels} $health_status"
@@ -492,6 +614,10 @@ generate_prometheus_metric_values() {
     echo "smart_percentage_used{$smart_labels} $percentage_used"
     echo "smart_available_spare{$smart_labels} $available_spare"
     echo "smart_available_spare_threshold{$smart_labels} $available_spare_threshold"
+    echo "smart_data_written_blocks{$smart_labels} $data_written_blocks"
+    echo "smart_total_lbas_written{$smart_labels} $total_lbas_written"
+    echo "smart_remaining_life_hours{$smart_labels} $remaining_life_hours"
+    echo "smart_disk_max_life_hours{$smart_labels} $disk_max_life_hours"
 }
 
 # 控制台彩色输出
@@ -508,11 +634,21 @@ print_colored_output() {
         temperature=$(get_disk_temperature "$device")
         power_on_hours=$(get_power_on_hours "$device")
         reallocated_sectors=$(get_reallocated_sectors "$device")
+        percentage_used=$(get_ssd_life_info "$device" "percentage_used")
+        remaining_life_hours=0
+        disk_max_life_hours=0
+        if [[ $power_on_hours -gt 0 && $percentage_used -gt 0 ]]; then
+            remaining_life_hours=$(( (100 - percentage_used) * power_on_hours / percentage_used ))
+            disk_max_life_hours=$(( power_on_hours * 100 / percentage_used ))
+        fi
     else
         health_status=1
         temperature=-1
         power_on_hours=-1
         reallocated_sectors=-1
+        percentage_used=-1
+        remaining_life_hours=0
+        disk_max_life_hours=0
     fi
 
     if [ $health_status -eq 1 ]; then
@@ -534,6 +670,14 @@ print_colored_output() {
         temp_color=$GREEN
     fi
 
+    if [[ $percentage_used -ge 95 ]]; then
+        life_color=$RED
+    elif [[ $percentage_used -ge 80 ]]; then
+        life_color=$YELLOW
+    else
+        life_color=$GREEN
+    fi
+
     echo -e "${BLUE}========================================${NC}"
     echo -e "${BLUE}设备: $device_basename${NC}"
     echo -e "${BLUE}型号: $model${NC}"
@@ -546,6 +690,13 @@ print_colored_output() {
         echo -e "${BLUE}温度: ${temp_color}${temperature}°C${NC}"
         echo -e "${BLUE}通电时间: ${power_on_hours}小时${NC}"
         echo -e "${BLUE}重映射扇区: ${reallocated_sectors}${NC}"
+        echo -e "${BLUE}已使用寿命: ${life_color}${percentage_used}%${NC}"
+        if [[ $disk_max_life_hours -gt 0 ]]; then
+            echo -e "${BLUE}设计总寿命: ${disk_max_life_hours}小时${NC}"
+            echo -e "${BLUE}预计剩余寿命: ${remaining_life_hours}小时${NC}"
+        else
+            echo -e "${BLUE}寿命信息: 无法计算(使用率过低或通电时间过短)${NC}"
+        fi
     else
         echo -e "${BLUE}SMART: ${YELLOW}不支持 (虚拟化磁盘)${NC}"
         echo -e "${BLUE}健康状态: ${health_color}$health_text${NC}"
@@ -607,6 +758,8 @@ EOF
             <th>温度(°C)</th>
             <th>通电时间(小时)</th>
             <th>重映射扇区</th>
+            <th>已使用(%)</th>
+            <th>剩余寿命(小时)</th>
         </tr>
 EOF
         
@@ -619,6 +772,11 @@ EOF
                 temperature=$(get_disk_temperature "$device")
                 power_on_hours=$(get_power_on_hours "$device")
                 reallocated_sectors=$(get_reallocated_sectors "$device")
+                percentage_used=$(get_ssd_life_info "$device" "percentage_used")
+                remaining_life_hours=0
+                if [[ $power_on_hours -gt 0 && $percentage_used -gt 0 ]]; then
+                    remaining_life_hours=$(( (100 - percentage_used) * power_on_hours / percentage_used ))
+                fi
                 
                 if [ $health_status -eq 1 ]; then
                     health_class="healthy"
@@ -631,6 +789,14 @@ EOF
                     health_text="未知"
                 fi
                 
+                if [[ $percentage_used -ge 95 ]]; then
+                    life_color="error"
+                elif [[ $percentage_used -ge 80 ]]; then
+                    life_color="warning"
+                else
+                    life_color="healthy"
+                fi
+                
                 cat >> /tmp/disk_metrics.html <<EOF
         <tr>
             <td>$device_basename</td>
@@ -639,6 +805,8 @@ EOF
             <td>$temperature</td>
             <td>$power_on_hours</td>
             <td>$reallocated_sectors</td>
+            <td class="$life_color">${percentage_used}%</td>
+            <td>$remaining_life_hours</td>
         </tr>
 EOF
             fi
@@ -697,15 +865,33 @@ push_loop() {
     echo "按 Ctrl+C 停止"
 
     while true; do
+        local devices
+        devices=$(get_disk_devices)
+        
+        # 如果没有找到物理盘，跳过本次推送
+        if [[ -z "$devices" ]]; then
+            echo "$(date '+%Y-%m-%d %H:%M:%S') 未检测到物理磁盘，跳过推送"
+            sleep $SCRAPE_INTERVAL
+            continue
+        fi
+
         METRICS_FILE="/tmp/disk_metrics_$$.prom"
         {
             generate_prometheus_headers
-            for device in $(get_disk_devices); do
+            for device in $devices; do
                 if [ -e "$device" ]; then
                     generate_prometheus_metric_values "$device"
                 fi
             done
         } > "$METRICS_FILE"
+
+        # 如果指标文件为空（所有磁盘都不支持SMART），跳过推送
+        if [[ ! -s "$METRICS_FILE" ]]; then
+            echo "$(date '+%Y-%m-%d %H:%M:%S') 无有效指标数据，跳过推送"
+            rm -f "$METRICS_FILE"
+            sleep $SCRAPE_INTERVAL
+            continue
+        fi
 
         if push_to_gateway "$METRICS_FILE"; then
             echo "$(date '+%Y-%m-%d %H:%M:%S') 推送成功"
