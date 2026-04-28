@@ -378,29 +378,64 @@ get_ssd_life_info() {
                 return
                 ;;
             "wear_leveling_count")
-                local wl_raw=$(echo "$smart_output" | grep -i "Wear_Leveling_Count" | awk '{print $10}')
-                local wl_value=$(echo "$smart_output" | grep -i "Wear_Leveling_Count" | awk '{print $4}' | sed 's/^0*//')
-                if [[ -n "$wl_value" && "$wl_value" =~ ^[0-9]+$ ]]; then
-                    value=$wl_value
-                elif [[ -n "$wl_raw" && "$wl_raw" =~ ^[0-9]+$ ]]; then
-                    value=$wl_raw
+                # 精确匹配 Wear_Leveling_Count 数据行（跳过表头）
+                local wl_line=$(echo "$smart_output" | grep -i "^ *[0-9]\+ *Wear_Leveling_Count")
+                if [[ -n "$wl_line" ]]; then
+                    local wl_raw=$(echo "$wl_line" | awk '{print $10}')
+                    local wl_value=$(echo "$wl_line" | awk '{print $4}')
+                    # VALUE 字段通常是剩余寿命百分比（如 094 表示还剩 94%）
+                    wl_value=$(echo "$wl_value" | sed 's/^0*//')
+                    if [[ -n "$wl_value" && "$wl_value" =~ ^[0-9]+$ ]]; then
+                        value=$wl_value
+                    elif [[ -n "$wl_raw" && "$wl_raw" =~ ^[0-9]+$ ]]; then
+                        value=$wl_raw
+                    fi
                 fi
                 ;;
             "media_wearout_indicator")
-                value=$(echo "$smart_output" | grep -i "Media_Wearout_Indicator" | awk '{print $4}' | sed 's/^0*//' | tr -d '%')
+                local mwi_line=$(echo "$smart_output" | grep -i "^ *[0-9]\+ *Media_Wearout_Indicator")
+                if [[ -n "$mwi_line" ]]; then
+                    value=$(echo "$mwi_line" | awk '{print $4}' | sed 's/^0*//' | tr -d '%')
+                fi
                 ;;
             "percentage_used")
-                local pl_used=$(echo "$smart_output" | grep -i "Percent_Lifetime_Used" | awk '{print $4}' | sed 's/^0*//' | tr -d '%')
+                # 优先从 NVMe-style Percentage Used 获取
+                local pl_used=$(echo "$smart_output" | grep -i "^ *[0-9]\+ *Percent_Lifetime_Used" | awk '{print $4}' | sed 's/^0*//' | tr -d '%')
                 if [[ -z "$pl_used" ]]; then
-                    pl_used=$(echo "$smart_output" | grep -i "Percentage Used" | awk '{print $3}' | sed 's/^0*//' | tr -d '%')
+                    pl_used=$(echo "$smart_output" | grep -i "^ *[0-9]\+ *Percentage_Used" | awk '{print $4}' | sed 's/^0*//' | tr -d '%')
                 fi
+                # 其次从 Wear_Leveling_Count 推算（VALUE 字段 = 剩余寿命%）
                 if [[ -z "$pl_used" ]]; then
-                    local wl_value=$(echo "$smart_output" | grep -i "Wear_Leveling_Count" | awk '{print $4}' | sed 's/^0*//')
-                    if [[ -n "$wl_value" && "$wl_value" =~ ^[0-9]+$ && "$wl_value" -lt 100 ]]; then
-                        pl_used=$((100 - wl_value))
+                    local wl_line=$(echo "$smart_output" | grep -i "^ *[0-9]\+ *Wear_Leveling_Count")
+                    if [[ -n "$wl_line" ]]; then
+                        local wl_value=$(echo "$wl_line" | awk '{print $4}' | sed 's/^0*//')
+                        if [[ -n "$wl_value" && "$wl_value" =~ ^[0-9]+$ && "$wl_value" -le 100 ]]; then
+                            pl_used=$((100 - wl_value))
+                        fi
                     fi
                 fi
-                value=$pl_used
+                # 再其次尝试 Media_Wearout_Indicator（Intel 专用，VALUE = 剩余寿命%）
+                if [[ -z "$pl_used" ]]; then
+                    local mwi_line=$(echo "$smart_output" | grep -i "^ *[0-9]\+ *Media_Wearout_Indicator")
+                    if [[ -n "$mwi_line" ]]; then
+                        local mwi_value=$(echo "$mwi_line" | awk '{print $4}' | sed 's/^0*//' | tr -d '%')
+                        if [[ -n "$mwi_value" && "$mwi_value" =~ ^[0-9]+$ && "$mwi_value" -le 100 ]]; then
+                            pl_used=$((100 - mwi_value))
+                        fi
+                    fi
+                fi
+                # 如果 Wear_Leveling_Count 的 VALUE > 100（某些品牌用 RAW 值表示磨损次数）
+                if [[ -z "$pl_used" || "$pl_used" == "0" ]]; then
+                    local wl_line=$(echo "$smart_output" | grep -i "^ *[0-9]\+ *Wear_Leveling_Count")
+                    if [[ -n "$wl_line" ]]; then
+                        local wl_raw=$(echo "$wl_line" | awk '{print $10}')
+                        # 某些 SSD 的 RAW 值 = 已使用百分比（如 Samsung 870 QVO）
+                        if [[ -n "$wl_raw" && "$wl_raw" =~ ^[0-9]+$ && "$wl_raw" -gt 0 && "$wl_raw" -le 100 ]]; then
+                            pl_used=$wl_raw
+                        fi
+                    fi
+                fi
+                value=${pl_used:-0}
                 ;;
             "total_lbas_written")
                 # SATA SSD: Total_LBAs_Written (512-byte blocks)
