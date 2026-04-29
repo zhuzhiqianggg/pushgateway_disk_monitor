@@ -254,6 +254,30 @@ get_disk_info() {
     echo "${disk_type}|${model}|${serial}|${size}"
 }
 
+# 获取通用SMART属性值（按属性名称匹配）
+get_smart_value() {
+    local device=$1
+    local metric=$2
+    local value=""
+
+    case "$metric" in
+        "current_pending_sector")
+            value=$(smartctl -A "$device" 2>/dev/null | grep -i "Current_Pending_Sector" | awk '{print $NF}')
+            ;;
+        "reported_uncorrectable_errors")
+            value=$(smartctl -A "$device" 2>/dev/null | grep -i "Reported_Uncorrect" | awk '{print $NF}')
+            ;;
+        "offline_uncorrectable")
+            value=$(smartctl -A "$device" 2>/dev/null | grep -i "Offline_Uncorrectable" | awk '{print $NF}')
+            ;;
+    esac
+
+    if [[ -z "$value" || ! "$value" =~ ^[0-9]+$ ]]; then
+        value=0
+    fi
+    echo "$value"
+}
+
 # 获取磁盘健康状态
 get_disk_health() {
     local device=$1
