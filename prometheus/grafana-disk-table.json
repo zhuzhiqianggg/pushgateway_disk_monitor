@@ -42,8 +42,9 @@
           {
             "matcher": { "id": "byName", "options": "容量" },
             "properties": [
-              { "id": "unit", "value": "bytes" },
-              { "id": "custom.width", "value": 90 }
+              { "id": "unit", "value": "decbytes" },
+              { "id": "decimals", "value": 2 },
+              { "id": "custom.width", "value": 100 }
             ]
           },
           {
@@ -79,10 +80,6 @@
           {
             "matcher": { "id": "byName", "options": "序列号" },
             "properties": [{ "id": "custom.width", "value": 150 }]
-          },
-          {
-            "matcher": { "id": "byName", "options": "挂载点" },
-            "properties": [{ "id": "custom.width", "value": 130 }]
           }
         ]
       },
@@ -167,7 +164,8 @@
               "__name__": true,
               "job": true,
               "instance": true,
-              "Value #A": true
+              "Value #A": true,
+              "mountpoints": true
             },
             "includeByName": {},
             "indexByName": {
@@ -176,12 +174,11 @@
               "model": 2,
               "type": 3,
               "serial": 4,
-              "mountpoints": 5,
-              "Value #B": 6,
-              "Value #C": 7,
-              "Value #D": 8,
-              "Value #E": 9,
-              "Value #F": 10
+              "Value #B": 5,
+              "Value #C": 6,
+              "Value #D": 7,
+              "Value #E": 8,
+              "Value #F": 9
             },
             "renameByName": {
               "Value #A": "健康状态",
@@ -194,8 +191,7 @@
               "hostname": "服务器",
               "model": "型号",
               "serial": "序列号",
-              "type": "类型",
-              "mountpoints": "挂载点"
+              "type": "类型"
             }
           }
         }
