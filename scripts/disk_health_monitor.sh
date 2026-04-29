@@ -216,9 +216,15 @@ get_disk_info() {
     disk_type=$(detect_disk_type "$device")
 
     model=$(echo "$smart_output" | grep -E "Model Number|Device Model|Product" | head -1 | cut -d: -f2 | xargs)
+
+    # 过滤逻辑卷（非物理磁盘）
+    if echo "$model" | grep -qi "LOGICAL_VOLUME\|Virtual\|VMware\|QEMU"; then
+        return
+    fi
+
     serial=$(echo "$smart_output" | grep "Serial Number" | cut -d: -f2 | xargs)
 
-    local size_line=$(echo "$smart_output" | grep "User Capacity" | head -1)
+    local size_line=$(echo "$smart_output" | grep -E "User Capacity|Total NVM Capacity" | head -1)
     if [[ -n "$size_line" ]]; then
         local size_bytes=$(echo "$size_line" | grep -oP '\d[\d,]+ bytes' | head -1 | grep -oP '\d[\d,]+' | tr -d ',')
         if [[ -n "$size_bytes" ]] && [ "$size_bytes" -gt 0 ] 2>/dev/null; then
@@ -602,6 +608,11 @@ generate_prometheus_metric_values() {
     local disk_info=$(get_disk_info "$device")
     IFS='|' read -r disk_type model serial size <<< "$disk_info"
 
+    # 过滤逻辑卷（非物理磁盘）
+    if [[ -z "$model" || "$model" == "Unknown" ]] || echo "$model" | grep -qi "LOGICAL_VOLUME\|Virtual\|VMware\|QEMU"; then
+        return
+    fi
+
     local hostname_val=$(get_hostname)
     local mount_points=$(get_disk_mount_points "$device")
     local smart_supported=$(check_smart_supported "$device")
@@ -647,10 +658,16 @@ generate_prometheus_metric_values() {
 
     # 获取磁盘容量 (bytes)
     local capacity_bytes=0
-    local cap_line=$(smartctl -i "$device" 2>/dev/null | grep "User Capacity:")
+    # NVMe 用 "Total NVM Capacity:"，SATA 用 "User Capacity:"
+    local cap_line=$(smartctl -i "$device" 2>/dev/null | grep -E "User Capacity:|Total NVM Capacity:" | head -1)
     if [[ -n "$cap_line" ]]; then
         # 格式: "User Capacity:    4,801,039,802,368 bytes [4.80 TB]"
+        # 或: "Total NVM Capacity: 3,840,755,982,336 [3.84 TB]"
         capacity_bytes=$(echo "$cap_line" | grep -oP '[\d,]+(?= bytes)' | tr -d ',')
+        # 如果上面没匹配到，尝试匹配没有 "bytes" 的格式
+        if [[ -z "$capacity_bytes" ]]; then
+            capacity_bytes=$(echo "$cap_line" | grep -oP '\d[\d,]+(?= *\[)' | head -1 | tr -d ',')
+        fi
     fi
     if [[ -z "$capacity_bytes" || "$capacity_bytes" == "0" ]]; then
         # 回退: 从 sysfs 获取扇区数计算

@@ -1,11 +1,24 @@
 {
   "annotations": {
-    "list": []
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
   },
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 1,
-  "id": null,
+  "id": 101,
   "links": [],
   "liveNow": false,
   "panels": [
@@ -18,82 +31,230 @@
         "defaults": {
           "custom": {
             "align": "center",
-            "cellOptions": { "type": "auto" },
+            "cellOptions": {
+              "type": "auto"
+            },
             "filterable": true,
             "inspect": true
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
           }
         },
         "overrides": [
           {
-            "matcher": { "id": "byName", "options": "寿命消耗(%)" },
+            "matcher": {
+              "id": "byName",
+              "options": "寿命消耗(%)"
+            },
             "properties": [
-              { "id": "unit", "value": "percent" },
-              { "id": "decimals", "value": 1 },
-              { "id": "custom.width", "value": 110 }
+              {
+                "id": "unit",
+                "value": "percent"
+              },
+              {
+                "id": "decimals",
+                "value": 1
+              },
+              {
+                "id": "custom.width",
+                "value": 110
+              }
             ]
           },
           {
-            "matcher": { "id": "byName", "options": "温度(°C)" },
+            "matcher": {
+              "id": "byName",
+              "options": "温度(°C)"
+            },
             "properties": [
-              { "id": "unit", "value": "none" },
-              { "id": "custom.width", "value": 80 }
+              {
+                "id": "unit",
+                "value": "none"
+              },
+              {
+                "id": "custom.width",
+                "value": 80
+              }
             ]
           },
           {
-            "matcher": { "id": "byName", "options": "容量" },
+            "matcher": {
+              "id": "byName",
+              "options": "容量"
+            },
             "properties": [
-              { "id": "unit", "value": "decbytes" },
-              { "id": "decimals", "value": 2 },
-              { "id": "custom.width", "value": 100 }
+              {
+                "id": "unit",
+                "value": "decbytes"
+              },
+              {
+                "id": "decimals",
+                "value": 2
+              },
+              {
+                "id": "custom.width",
+                "value": 100
+              }
             ]
           },
           {
-            "matcher": { "id": "byName", "options": "通电时间(小时)" },
+            "matcher": {
+              "id": "byName",
+              "options": "通电时间(小时)"
+            },
             "properties": [
-              { "id": "unit", "value": "none" },
-              { "id": "custom.width", "value": 120 }
+              {
+                "id": "unit",
+                "value": "none"
+              },
+              {
+                "id": "custom.width",
+                "value": 120
+              }
             ]
           },
           {
-            "matcher": { "id": "byName", "options": "服务器" },
-            "properties": [{ "id": "custom.width", "value": 160 }]
+            "matcher": {
+              "id": "byName",
+              "options": "服务器"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 160
+              }
+            ]
           },
           {
-            "matcher": { "id": "byName", "options": "设备" },
-            "properties": [{ "id": "custom.width", "value": 80 }]
+            "matcher": {
+              "id": "byName",
+              "options": "设备"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 80
+              }
+            ]
           },
           {
-            "matcher": { "id": "byName", "options": "型号" },
-            "properties": [{ "id": "custom.width", "value": 200 }]
+            "matcher": {
+              "id": "byName",
+              "options": "型号"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 271
+              }
+            ]
           },
           {
-            "matcher": { "id": "byName", "options": "类型" },
-            "properties": [{ "id": "custom.width", "value": 60 }]
+            "matcher": {
+              "id": "byName",
+              "options": "类型"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 97
+              }
+            ]
           },
           {
-            "matcher": { "id": "byName", "options": "序列号" },
-            "properties": [{ "id": "custom.width", "value": 150 }]
+            "matcher": {
+              "id": "byName",
+              "options": "序列号"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 176
+              }
+            ]
           },
           {
-            "matcher": { "id": "byName", "options": "挂载点" },
-            "properties": [{ "id": "custom.width", "value": 140 }]
+            "matcher": {
+              "id": "byName",
+              "options": "挂载点"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 170
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "device"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 110
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "hostname"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 152
+              }
+            ]
           }
         ]
       },
-      "gridPos": { "h": 20, "w": 24, "x": 0, "y": 0 },
+      "gridPos": {
+        "h": 20,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
       "id": 1,
       "options": {
         "cellHeight": "sm",
-        "footer": { "countRows": true, "fields": "", "reducer": ["sum"], "show": true },
+        "footer": {
+          "countRows": true,
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": true
+        },
         "showHeader": true,
         "sortBy": [
-          { "desc": true, "displayName": "寿命消耗(%)" }
+          {
+            "desc": false,
+            "displayName": "hostname"
+          }
         ]
       },
-      "pluginVersion": "10.0.0",
+      "pluginVersion": "10.4.0",
       "targets": [
         {
-          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
           "expr": "smart_health_status",
           "format": "table",
           "instant": true,
@@ -102,7 +263,10 @@
           "refId": "A"
         },
         {
-          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
           "expr": "smart_temperature_celsius",
           "format": "table",
           "instant": true,
@@ -111,7 +275,10 @@
           "refId": "B"
         },
         {
-          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
           "expr": "smart_capacity_bytes",
           "format": "table",
           "instant": true,
@@ -120,7 +287,10 @@
           "refId": "C"
         },
         {
-          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
           "expr": "smart_percentage_used",
           "format": "table",
           "instant": true,
@@ -129,7 +299,10 @@
           "refId": "D"
         },
         {
-          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
           "expr": "smart_power_on_hours",
           "format": "table",
           "instant": true,
@@ -148,48 +321,66 @@
           "id": "groupBy",
           "options": {
             "fields": {
-              "hostname": {
-                "aggregations": [],
-                "operation": "groupby"
+              "Value #A": {
+                "aggregations": [
+                  "lastNotNull"
+                ],
+                "operation": "aggregate"
+              },
+              "Value #B": {
+                "aggregations": [
+                  "lastNotNull"
+                ],
+                "operation": "aggregate"
+              },
+              "Value #C": {
+                "aggregations": [
+                  "lastNotNull"
+                ],
+                "operation": "aggregate"
+              },
+              "Value #D": {
+                "aggregations": [
+                  "lastNotNull"
+                ],
+                "operation": "aggregate"
+              },
+              "Value #E": {
+                "aggregations": [
+                  "lastNotNull"
+                ],
+                "operation": "aggregate"
               },
               "device": {
                 "aggregations": [],
                 "operation": "groupby"
               },
+              "hostname": {
+                "aggregations": [],
+                "operation": "groupby"
+              },
               "model": {
-                "aggregations": ["lastNotNull"],
-                "operation": "aggregate"
-              },
-              "type": {
-                "aggregations": ["lastNotNull"],
-                "operation": "aggregate"
-              },
-              "serial": {
-                "aggregations": ["lastNotNull"],
+                "aggregations": [
+                  "lastNotNull"
+                ],
                 "operation": "aggregate"
               },
               "mountpoints": {
-                "aggregations": ["lastNotNull"],
+                "aggregations": [
+                  "lastNotNull"
+                ],
                 "operation": "aggregate"
               },
-              "Value #A": {
-                "aggregations": ["lastNotNull"],
+              "serial": {
+                "aggregations": [
+                  "lastNotNull"
+                ],
                 "operation": "aggregate"
               },
-              "Value #B": {
-                "aggregations": ["lastNotNull"],
-                "operation": "aggregate"
-              },
-              "Value #C": {
-                "aggregations": ["lastNotNull"],
-                "operation": "aggregate"
-              },
-              "Value #D": {
-                "aggregations": ["lastNotNull"],
-                "operation": "aggregate"
-              },
-              "Value #E": {
-                "aggregations": ["lastNotNull"],
+              "type": {
+                "aggregations": [
+                  "lastNotNull"
+                ],
                 "operation": "aggregate"
               }
             }
@@ -200,32 +391,32 @@
           "options": {
             "excludeByName": {
               "Time": true,
+              "Value #A (lastNotNull)": true,
               "__name__": true,
-              "job": true,
               "instance": true,
-              "Value #A (lastNotNull)": true
+              "job": true
             },
             "indexByName": {
-              "hostname": 0,
-              "device": 1,
-              "model (lastNotNull)": 2,
-              "type (lastNotNull)": 3,
-              "serial (lastNotNull)": 4,
-              "mountpoints (lastNotNull)": 5,
               "Value #B (lastNotNull)": 6,
               "Value #C (lastNotNull)": 7,
               "Value #D (lastNotNull)": 8,
-              "Value #E (lastNotNull)": 9
+              "Value #E (lastNotNull)": 9,
+              "device": 1,
+              "hostname": 0,
+              "model (lastNotNull)": 2,
+              "mountpoints (lastNotNull)": 5,
+              "serial (lastNotNull)": 4,
+              "type (lastNotNull)": 3
             },
             "renameByName": {
-              "model (lastNotNull)": "型号",
-              "type (lastNotNull)": "类型",
-              "serial (lastNotNull)": "序列号",
-              "mountpoints (lastNotNull)": "挂载点",
               "Value #B (lastNotNull)": "温度(°C)",
               "Value #C (lastNotNull)": "容量",
               "Value #D (lastNotNull)": "寿命消耗(%)",
-              "Value #E (lastNotNull)": "通电时间(小时)"
+              "Value #E (lastNotNull)": "通电时间(小时)",
+              "model (lastNotNull)": "型号",
+              "mountpoints (lastNotNull)": "挂载点",
+              "serial (lastNotNull)": "序列号",
+              "type (lastNotNull)": "类型"
             }
           }
         }
@@ -234,13 +425,21 @@
     }
   ],
   "refresh": "5m",
-  "schemaVersion": 38,
-  "style": "dark",
-  "tags": ["disk", "health", "smart", "lifecycle"],
+  "schemaVersion": 39,
+  "tags": [
+    "disk",
+    "health",
+    "smart",
+    "lifecycle"
+  ],
   "templating": {
     "list": [
       {
-        "current": { "selected": false, "text": "Prometheus", "value": "Prometheus" },
+        "current": {
+          "selected": false,
+          "text": "Prometheus",
+          "value": "hh0ESGCVz"
+        },
         "hide": 0,
         "includeAll": false,
         "label": "数据源",
@@ -256,8 +455,15 @@
       },
       {
         "allValue": ".*",
-        "current": { "selected": true, "text": "All", "value": "$__all" },
-        "datasource": { "type": "prometheus", "uid": "${datasource}" },
+        "current": {
+          "selected": false,
+          "text": "All",
+          "value": "$__all"
+        },
+        "datasource": {
+          "type": "prometheus",
+          "uid": "${datasource}"
+        },
         "definition": "label_values(smart_health_status, hostname)",
         "hide": 0,
         "includeAll": true,
@@ -265,7 +471,10 @@
         "multi": true,
         "name": "hostname",
         "options": [],
-        "query": { "query": "label_values(smart_health_status, hostname)", "refId": "StandardVariableQuery" },
+        "query": {
+          "query": "label_values(smart_health_status, hostname)",
+          "refId": "StandardVariableQuery"
+        },
         "refresh": 2,
         "regex": "",
         "skipUrlSync": false,
@@ -274,8 +483,15 @@
       },
       {
         "allValue": ".*",
-        "current": { "selected": true, "text": "All", "value": "$__all" },
-        "datasource": { "type": "prometheus", "uid": "${datasource}" },
+        "current": {
+          "selected": false,
+          "text": "All",
+          "value": "$__all"
+        },
+        "datasource": {
+          "type": "prometheus",
+          "uid": "${datasource}"
+        },
         "definition": "label_values(smart_health_status{hostname=~\"$hostname\"}, type)",
         "hide": 0,
         "includeAll": true,
@@ -283,7 +499,10 @@
         "multi": true,
         "name": "type",
         "options": [],
-        "query": { "query": "label_values(smart_health_status{hostname=~\"$hostname\"}, type)", "refId": "StandardVariableQuery" },
+        "query": {
+          "query": "label_values(smart_health_status{hostname=~\"$hostname\"}, type)",
+          "refId": "StandardVariableQuery"
+        },
         "refresh": 2,
         "regex": "",
         "skipUrlSync": false,
@@ -292,11 +511,14 @@
       }
     ]
   },
-  "time": { "from": "now-6h", "to": "now" },
+  "time": {
+    "from": "now-6h",
+    "to": "now"
+  },
   "timepicker": {},
   "timezone": "browser",
   "title": "磁盘健康统计表",
   "uid": "disk-health-table",
-  "version": 1,
+  "version": 3,
   "weekStart": ""
 }
