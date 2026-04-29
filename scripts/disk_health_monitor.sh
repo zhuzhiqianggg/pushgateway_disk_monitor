@@ -598,6 +598,12 @@ generate_prometheus_headers() {
 # TYPE smart_remaining_life_hours gauge
 # HELP smart_disk_max_life_hours 推算设计总寿命(小时, 0表示无法计算)
 # TYPE smart_disk_max_life_hours gauge
+# HELP smart_current_pending_sector 待处理扇区数(即将变为坏道, 0表示正常)
+# TYPE smart_current_pending_sector gauge
+# HELP smart_reported_uncorrectable_errors 不可纠正错误数(ECC无法修复, 0表示正常)
+# TYPE smart_reported_uncorrectable_errors gauge
+# HELP smart_offline_uncorrectable 离线坏扇区数(离线扫描发现, 0表示正常)
+# TYPE smart_offline_uncorrectable gauge
 EOF
 }
 
@@ -636,6 +642,9 @@ generate_prometheus_metric_values() {
         local available_spare_threshold=$(get_ssd_life_info "$device" "available_spare_threshold")
         local data_written_blocks=$(get_ssd_life_info "$device" "data_units_written")
         local total_lbas_written=$(get_ssd_life_info "$device" "total_lbas_written")
+        local current_pending=$(get_smart_value "$device" "current_pending_sector")
+        local reported_uncorrectable=$(get_smart_value "$device" "reported_uncorrectable_errors")
+        local offline_uncorrectable=$(get_smart_value "$device" "offline_uncorrectable")
         local remaining_life_hours=0
         local disk_max_life_hours=0
         if [[ $power_on_hours -gt 0 && $percentage_used -gt 0 ]]; then
@@ -652,6 +661,9 @@ generate_prometheus_metric_values() {
         local available_spare_threshold=-1
         local data_written_blocks=-1
         local total_lbas_written=0
+        local current_pending=0
+        local reported_uncorrectable=0
+        local offline_uncorrectable=0
         local remaining_life_hours=0
         local disk_max_life_hours=0
     fi
@@ -686,6 +698,9 @@ generate_prometheus_metric_values() {
     echo "smart_available_spare_threshold{$smart_labels} $available_spare_threshold"
     echo "smart_data_written_blocks{$smart_labels} $data_written_blocks"
     echo "smart_total_lbas_written{$smart_labels} $total_lbas_written"
+    echo "smart_current_pending_sector{$smart_labels} $current_pending"
+    echo "smart_reported_uncorrectable_errors{$smart_labels} $reported_uncorrectable"
+    echo "smart_offline_uncorrectable{$smart_labels} $offline_uncorrectable"
     echo "smart_remaining_life_hours{$smart_labels} $remaining_life_hours"
     echo "smart_disk_max_life_hours{$smart_labels} $disk_max_life_hours"
     echo "smart_capacity_bytes{$smart_labels} $capacity_bytes"
