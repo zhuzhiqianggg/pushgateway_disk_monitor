@@ -19,7 +19,8 @@
           "custom": {
             "align": "center",
             "cellOptions": { "type": "auto" },
-            "inspect": false
+            "filterable": true,
+            "inspect": true
           }
         },
         "overrides": [
@@ -165,8 +166,10 @@
               "Time": true,
               "__name__": true,
               "job": true,
-              "instance": true
+              "instance": true,
+              "Value #A": true
             },
+            "includeByName": {},
             "indexByName": {
               "hostname": 0,
               "device": 1,
@@ -187,7 +190,6 @@
               "Value #D": "寿命消耗(%)",
               "Value #E": "通电时间(小时)",
               "Value #F": "重映射扇区",
-              "Value #G": "SMART",
               "device": "设备",
               "hostname": "服务器",
               "model": "型号",
