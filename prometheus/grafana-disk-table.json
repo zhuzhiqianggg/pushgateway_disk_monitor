@@ -55,6 +55,27 @@
             ]
           },
           {
+            "matcher": { "id": "byName", "options": "待处理扇区" },
+            "properties": [
+              { "id": "unit", "value": "none" },
+              { "id": "custom.width", "value": 100 }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "不可纠正错误" },
+            "properties": [
+              { "id": "unit", "value": "none" },
+              { "id": "custom.width", "value": 110 }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "离线坏扇区" },
+            "properties": [
+              { "id": "unit", "value": "none" },
+              { "id": "custom.width", "value": 100 }
+            ]
+          },
+          {
             "matcher": { "id": "byName", "options": "服务器" },
             "properties": [{ "id": "custom.width", "value": 160 }]
           },
@@ -136,6 +157,33 @@
           "legendFormat": "__auto",
           "range": false,
           "refId": "E"
+        },
+        {
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "expr": "smart_current_pending_sector",
+          "format": "table",
+          "instant": true,
+          "legendFormat": "__auto",
+          "range": false,
+          "refId": "F"
+        },
+        {
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "expr": "smart_reported_uncorrectable_errors",
+          "format": "table",
+          "instant": true,
+          "legendFormat": "__auto",
+          "range": false,
+          "refId": "G"
+        },
+        {
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "expr": "smart_offline_uncorrectable",
+          "format": "table",
+          "instant": true,
+          "legendFormat": "__auto",
+          "range": false,
+          "refId": "H"
         }
       ],
       "title": "磁盘健康状态一览表",
@@ -191,6 +239,18 @@
               "Value #E": {
                 "aggregations": ["lastNotNull"],
                 "operation": "aggregate"
+              },
+              "Value #F": {
+                "aggregations": ["lastNotNull"],
+                "operation": "aggregate"
+              },
+              "Value #G": {
+                "aggregations": ["lastNotNull"],
+                "operation": "aggregate"
+              },
+              "Value #H": {
+                "aggregations": ["lastNotNull"],
+                "operation": "aggregate"
               }
             }
           }
@@ -215,7 +275,10 @@
               "Value #B (lastNotNull)": 6,
               "Value #C (lastNotNull)": 7,
               "Value #D (lastNotNull)": 8,
-              "Value #E (lastNotNull)": 9
+              "Value #E (lastNotNull)": 9,
+              "Value #F (lastNotNull)": 10,
+              "Value #G (lastNotNull)": 11,
+              "Value #H (lastNotNull)": 12
             },
             "renameByName": {
               "model (lastNotNull)": "型号",
@@ -225,7 +288,10 @@
               "Value #B (lastNotNull)": "温度(°C)",
               "Value #C (lastNotNull)": "容量",
               "Value #D (lastNotNull)": "寿命消耗(%)",
-              "Value #E (lastNotNull)": "通电时间(小时)"
+              "Value #E (lastNotNull)": "通电时间(小时)",
+              "Value #F (lastNotNull)": "待处理扇区",
+              "Value #G (lastNotNull)": "不可纠正错误",
+              "Value #H (lastNotNull)": "离线坏扇区"
             }
           }
         }
