@@ -196,13 +196,6 @@
           }
         },
         {
-          "id": "renameByRegex",
-          "options": {
-            "regex": " \\(lastNotNull\\)$",
-            "renamePattern": ""
-          }
-        },
-        {
           "id": "organize",
           "options": {
             "excludeByName": {
@@ -210,26 +203,29 @@
               "__name__": true,
               "job": true,
               "instance": true,
-              "Value #A": true
+              "Value #A (lastNotNull)": true
             },
-            "includeByName": {},
             "indexByName": {
               "hostname": 0,
               "device": 1,
-              "model": 2,
-              "type": 3,
-              "serial": 4,
-              "mountpoints": 5,
-              "Value #B": 6,
-              "Value #C": 7,
-              "Value #D": 8,
-              "Value #E": 9
+              "model (lastNotNull)": 2,
+              "type (lastNotNull)": 3,
+              "serial (lastNotNull)": 4,
+              "mountpoints (lastNotNull)": 5,
+              "Value #B (lastNotNull)": 6,
+              "Value #C (lastNotNull)": 7,
+              "Value #D (lastNotNull)": 8,
+              "Value #E (lastNotNull)": 9
             },
             "renameByName": {
-              "Value #B": "温度(°C)",
-              "Value #C": "容量",
-              "Value #D": "寿命消耗(%)",
-              "Value #E": "通电时间(小时)"
+              "model (lastNotNull)": "型号",
+              "type (lastNotNull)": "类型",
+              "serial (lastNotNull)": "序列号",
+              "mountpoints (lastNotNull)": "挂载点",
+              "Value #B (lastNotNull)": "温度(°C)",
+              "Value #C (lastNotNull)": "容量",
+              "Value #D (lastNotNull)": "寿命消耗(%)",
+              "Value #E (lastNotNull)": "通电时间(小时)"
             }
           }
         }
