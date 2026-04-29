@@ -16,128 +16,72 @@
       },
       "fieldConfig": {
         "defaults": {
-          "color": {
-            "mode": "thresholds"
-          },
           "custom": {
-            "align": "auto",
+            "align": "center",
             "cellOptions": { "type": "auto" },
-            "filterable": false,
             "inspect": false
-          },
-          "mappings": [
-            { "options": { "0": { "color": "red", "text": "失败" } }, "type": "value" },
-            { "options": { "1": { "color": "green", "text": "正常" } }, "type": "value" },
-            { "options": { "2": { "color": "yellow", "text": "未知" } }, "type": "value" },
-            { "options": { "-1": { "color": "red", "text": "不支持" } }, "type": "value" }
-          ],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              { "color": "red", "value": null },
-              { "color": "green", "value": 1 },
-              { "color": "yellow", "value": 2 }
-            ]
           }
         },
         "overrides": [
           {
-            "matcher": { "id": "byName", "options": "健康状态" },
+            "matcher": { "id": "byName", "options": "寿命消耗(%)" },
             "properties": [
-              { "id": "custom.cellOptions", "value": { "mode": "basic", "type": "color-background" } },
-              { "id": "custom.width", "value": 100 }
+              { "id": "unit", "value": "percent" },
+              { "id": "decimals", "value": 1 },
+              { "id": "custom.width", "value": 110 }
             ]
           },
           {
             "matcher": { "id": "byName", "options": "温度(°C)" },
             "properties": [
               { "id": "unit", "value": "none" },
-              { "id": "thresholds", "value": {
-                "mode": "absolute",
-                "steps": [
-                  { "color": "green", "value": null },
-                  { "color": "yellow", "value": 40 },
-                  { "color": "orange", "value": 50 },
-                  { "color": "red", "value": 60 }
-                ]
-              }},
-              { "id": "custom.width", "value": 100 }
+              { "id": "custom.width", "value": 80 }
             ]
           },
           {
             "matcher": { "id": "byName", "options": "容量" },
             "properties": [
               { "id": "unit", "value": "bytes" },
-              { "id": "custom.width", "value": 100 }
-            ]
-          },
-          {
-            "matcher": { "id": "byName", "options": "寿命消耗(%)" },
-            "properties": [
-              { "id": "unit", "value": "percent" },
-              { "id": "max", "value": 100 },
-              { "id": "min", "value": 0 },
-              { "id": "thresholds", "value": {
-                "mode": "absolute",
-                "steps": [
-                  { "color": "green", "value": null },
-                  { "color": "yellow", "value": 50 },
-                  { "color": "orange", "value": 80 },
-                  { "color": "red", "value": 95 }
-                ]
-              }},
-              { "id": "custom.cellOptions", "value": { "mode": "gradient", "type": "color-background" } },
-              { "id": "custom.width", "value": 120 }
+              { "id": "custom.width", "value": 90 }
             ]
           },
           {
             "matcher": { "id": "byName", "options": "通电时间(小时)" },
             "properties": [
               { "id": "unit", "value": "none" },
-              { "id": "custom.width", "value": 130 }
+              { "id": "custom.width", "value": 120 }
             ]
           },
           {
             "matcher": { "id": "byName", "options": "重映射扇区" },
             "properties": [
               { "id": "unit", "value": "none" },
-              { "id": "custom.width", "value": 110 }
-            ]
-          },
-          {
-            "matcher": { "id": "byName", "options": "SMART" },
-            "properties": [
-              { "id": "mappings", "value": [
-                { "options": { "0": { "color": "red", "text": "不支持" } }, "type": "value" },
-                { "options": { "1": { "color": "green", "text": "支持" } }, "type": "value" }
-              ]},
-              { "id": "custom.cellOptions", "value": { "mode": "basic", "type": "color-background" } },
-              { "id": "custom.width", "value": 80 }
+              { "id": "custom.width", "value": 100 }
             ]
           },
           {
             "matcher": { "id": "byName", "options": "服务器" },
-            "properties": [{ "id": "custom.width", "value": 180 }]
+            "properties": [{ "id": "custom.width", "value": 160 }]
           },
           {
             "matcher": { "id": "byName", "options": "设备" },
-            "properties": [{ "id": "custom.width", "value": 90 }]
+            "properties": [{ "id": "custom.width", "value": 80 }]
           },
           {
             "matcher": { "id": "byName", "options": "型号" },
-            "properties": [{ "id": "custom.width", "value": 220 }]
-          },
-          {
-            "matcher": { "id": "byName", "options": "类型" },
-            "properties": [{ "id": "custom.width", "value": 70 }]
-          },
-          {
-            "matcher": { "id": "byName", "options": "序列号" },
             "properties": [{ "id": "custom.width", "value": 180 }]
           },
           {
-            "matcher": { "id": "byName", "options": "挂载点" },
+            "matcher": { "id": "byName", "options": "类型" },
+            "properties": [{ "id": "custom.width", "value": 60 }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "序列号" },
             "properties": [{ "id": "custom.width", "value": 150 }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "挂载点" },
+            "properties": [{ "id": "custom.width", "value": 130 }]
           }
         ]
       },
@@ -206,15 +150,6 @@
           "legendFormat": "__auto",
           "range": false,
           "refId": "F"
-        },
-        {
-          "datasource": { "type": "prometheus", "uid": "${datasource}" },
-          "expr": "smart_smart_available",
-          "format": "table",
-          "instant": true,
-          "legendFormat": "__auto",
-          "range": false,
-          "refId": "G"
         }
       ],
       "title": "磁盘健康状态一览表",
@@ -239,13 +174,11 @@
               "type": 3,
               "serial": 4,
               "mountpoints": 5,
-              "Value #A": 6,
-              "Value #B": 7,
-              "Value #C": 8,
-              "Value #D": 9,
-              "Value #E": 10,
-              "Value #F": 11,
-              "Value #G": 12
+              "Value #B": 6,
+              "Value #C": 7,
+              "Value #D": 8,
+              "Value #E": 9,
+              "Value #F": 10
             },
             "renameByName": {
               "Value #A": "健康状态",
