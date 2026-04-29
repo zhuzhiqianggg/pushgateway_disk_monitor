@@ -80,6 +80,10 @@
           {
             "matcher": { "id": "byName", "options": "序列号" },
             "properties": [{ "id": "custom.width", "value": 150 }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "挂载点" },
+            "properties": [{ "id": "custom.width", "value": 140 }]
           }
         ]
       },
@@ -157,6 +161,61 @@
           "options": {}
         },
         {
+          "id": "groupBy",
+          "options": {
+            "fields": {
+              "hostname": {
+                "aggregations": [],
+                "operation": "groupby"
+              },
+              "device": {
+                "aggregations": [],
+                "operation": "groupby"
+              },
+              "model": {
+                "aggregations": ["lastNotNull"],
+                "operation": "aggregate"
+              },
+              "type": {
+                "aggregations": ["lastNotNull"],
+                "operation": "aggregate"
+              },
+              "serial": {
+                "aggregations": ["lastNotNull"],
+                "operation": "aggregate"
+              },
+              "mountpoints": {
+                "aggregations": ["lastNotNull"],
+                "operation": "aggregate"
+              },
+              "Value #A": {
+                "aggregations": ["lastNotNull"],
+                "operation": "aggregate"
+              },
+              "Value #B": {
+                "aggregations": ["lastNotNull"],
+                "operation": "aggregate"
+              },
+              "Value #C": {
+                "aggregations": ["lastNotNull"],
+                "operation": "aggregate"
+              },
+              "Value #D": {
+                "aggregations": ["lastNotNull"],
+                "operation": "aggregate"
+              },
+              "Value #E": {
+                "aggregations": ["lastNotNull"],
+                "operation": "aggregate"
+              },
+              "Value #F": {
+                "aggregations": ["lastNotNull"],
+                "operation": "aggregate"
+              }
+            }
+          }
+        },
+        {
           "id": "organize",
           "options": {
             "excludeByName": {
@@ -164,8 +223,7 @@
               "__name__": true,
               "job": true,
               "instance": true,
-              "Value #A": true,
-              "mountpoints": true
+              "Value #A (lastNotNull)": true
             },
             "includeByName": {},
             "indexByName": {
@@ -174,24 +232,26 @@
               "model": 2,
               "type": 3,
               "serial": 4,
-              "Value #B": 5,
-              "Value #C": 6,
-              "Value #D": 7,
-              "Value #E": 8,
-              "Value #F": 9
+              "mountpoints": 5,
+              "Value #B (lastNotNull)": 6,
+              "Value #C (lastNotNull)": 7,
+              "Value #D (lastNotNull)": 8,
+              "Value #E (lastNotNull)": 9,
+              "Value #F (lastNotNull)": 10
             },
             "renameByName": {
-              "Value #A": "健康状态",
-              "Value #B": "温度(°C)",
-              "Value #C": "容量",
-              "Value #D": "寿命消耗(%)",
-              "Value #E": "通电时间(小时)",
-              "Value #F": "重映射扇区",
+              "Value #A (lastNotNull)": "健康状态",
+              "Value #B (lastNotNull)": "温度(°C)",
+              "Value #C (lastNotNull)": "容量",
+              "Value #D (lastNotNull)": "寿命消耗(%)",
+              "Value #E (lastNotNull)": "通电时间(小时)",
+              "Value #F (lastNotNull)": "重映射扇区",
               "device": "设备",
               "hostname": "服务器",
               "model": "型号",
               "serial": "序列号",
-              "type": "类型"
+              "type": "类型",
+              "mountpoints": "挂载点"
             }
           }
         }
