@@ -381,6 +381,21 @@ get_ssd_life_info() {
         case $info_type in
             "percentage_used")
                 value=$(smartctl -A "$device" 2>/dev/null | grep 'Percentage Used:' | sed 's/.*Percentage Used: *//' | awk '{print $1}' | tr -d '%,' )
+                # 部分品牌固件 bug：Percentage Used 始终为 0，需要根据 Data Units Written 推算
+                if [[ "$value" == "0" || -z "$value" || "$value" == "-1" ]]; then
+                    local powh
+                    powh=$(smartctl -A "$device" 2>/dev/null | grep 'Power On Hours:' | awk '{print $NF}' | tr -d ',')
+                    if [[ -n "$powh" && "$powh" =~ ^[0-9]+$ && "$powh" -gt 100 ]]; then
+                        # 从 smartctl 输出中直接获取 TB 数值（格式: "174,851,279 [89.5 TB]"）
+                        local duw_tb=$(smartctl -A "$device" 2>/dev/null | grep 'Data Units Written:' | grep -oP '\[\K[\d.]+(?= TB)')
+                        # 获取 NVMe 容量 TB 数值（格式: "3,840,755,982,336 [3.84 TB]"）
+                        local cap_tb=$(smartctl -i "$device" 2>/dev/null | grep "Total NVM Capacity:" | grep -oP '\[\K[\d.]+(?= TB)')
+                        if [[ -n "$duw_tb" && -n "$cap_tb" ]]; then
+                            # 用 awk 做浮点运算：写入量/容量 * 100/3000 * 100%（3000 DW = 100%）
+                            value=$(awk "BEGIN { v = ($duw_tb / $cap_tb) * 100 / 3000 * 100; if(v>100) v=100; printf \"%d\", v }")
+                        fi
+                    fi
+                fi
                 if [[ -z "$value" ]]; then
                     value=-1
                 fi
