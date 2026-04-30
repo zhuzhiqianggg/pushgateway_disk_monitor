@@ -77,6 +77,14 @@
             ]
           },
           {
+            "matcher": { "id": "byName", "options": "已写入(TB)" },
+            "properties": [
+              { "id": "unit", "value": "decbytes" },
+              { "id": "decimals", "value": 2 },
+              { "id": "custom.width", "value": 110 }
+            ]
+          },
+          {
             "matcher": { "id": "byName", "options": "服务器" },
             "properties": [{ "id": "custom.width", "value": 160 }]
           },
@@ -185,6 +193,15 @@
           "legendFormat": "__auto",
           "range": false,
           "refId": "H"
+        },
+        {
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "expr": "smart_total_bytes_written",
+          "format": "table",
+          "instant": true,
+          "legendFormat": "__auto",
+          "range": false,
+          "refId": "I"
         }
       ],
       "title": "磁盘健康状态一览表",
@@ -252,6 +269,10 @@
               "Value #H": {
                 "aggregations": ["lastNotNull"],
                 "operation": "aggregate"
+              },
+              "Value #I": {
+                "aggregations": ["lastNotNull"],
+                "operation": "aggregate"
               }
             }
           }
@@ -279,7 +300,8 @@
               "Value #E (lastNotNull)": 9,
               "Value #F (lastNotNull)": 10,
               "Value #G (lastNotNull)": 11,
-              "Value #H (lastNotNull)": 12
+              "Value #H (lastNotNull)": 12,
+              "Value #I (lastNotNull)": 13
             },
             "renameByName": {
               "model (lastNotNull)": "型号",
@@ -292,7 +314,8 @@
               "Value #E (lastNotNull)": "通电时间(天)",
               "Value #F (lastNotNull)": "待处理扇区",
               "Value #G (lastNotNull)": "不可纠正错误",
-              "Value #H (lastNotNull)": "离线坏扇区"
+              "Value #H (lastNotNull)": "离线坏扇区",
+              "Value #I (lastNotNull)": "已写入(TB)"
             }
           }
         }

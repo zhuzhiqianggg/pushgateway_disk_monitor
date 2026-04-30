@@ -618,6 +618,8 @@ generate_prometheus_headers() {
 # TYPE smart_data_written_blocks gauge
 # HELP smart_total_lbas_written SATA SSD总LBA写入量(512-byte blocks, 0表示非SATA SSD或不可获取)
 # TYPE smart_total_lbas_written gauge
+# HELP smart_total_bytes_written 磁盘总写入字节数(NVMe和SATA SSD统一, 字节单位)
+# TYPE smart_total_bytes_written gauge
 # HELP smart_remaining_life_hours 预计剩余寿命(小时, 0表示无法计算)
 # TYPE smart_remaining_life_hours gauge
 # HELP smart_disk_max_life_hours 推算设计总寿命(小时, 0表示无法计算)
@@ -722,6 +724,18 @@ generate_prometheus_metric_values() {
     echo "smart_available_spare_threshold{$smart_labels} $available_spare_threshold"
     echo "smart_data_written_blocks{$smart_labels} $data_written_blocks"
     echo "smart_total_lbas_written{$smart_labels} $total_lbas_written"
+
+    # 统一计算总写入字节数（NVMe 和 SATA SSD）
+    local total_bytes_written=0
+    if [[ "$disk_type" == "nvme" && "$data_written_blocks" -gt 0 ]]; then
+        # NVMe: Data Units Written 单位是 512-byte blocks
+        total_bytes_written=$((data_written_blocks * 512))
+    elif [[ "$disk_type" == "ssd" && "$total_lbas_written" -gt 0 ]]; then
+        # SATA SSD: Total LBAs Written 单位也是 512-byte blocks
+        total_bytes_written=$((total_lbas_written * 512))
+    fi
+    echo "smart_total_bytes_written{$smart_labels} $total_bytes_written"
+
     echo "smart_current_pending_sector{$smart_labels} $current_pending"
     echo "smart_reported_uncorrectable_errors{$smart_labels} $reported_uncorrectable"
     echo "smart_offline_uncorrectable{$smart_labels} $offline_uncorrectable"
